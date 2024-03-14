@@ -8,6 +8,12 @@ CICIDS-2017  [https://www.unb.ca/cic/datasets/ids-2017.html](url)
 
 ## How to run the code?
 * CICIoT2023
+  + Binary-class clasification
+    - Binary classification [CICIoT2023, DCNN].py
+    - Binary classification [CICIoT2023, DNN].py
+  + Multi-class classification
+    - Multiclass classification [CICIoT2023, DCNN].py
+    - Multiclass classification [CICIoT2023, DNN].py
   
 * CICIDS-2017
 ## Environment
