@@ -132,16 +132,11 @@ model.summary()
 
 opt = tf.keras.optimizers.legacy.Adam(learning_rate=0.0001)
 model.compile(loss='binary_crossentropy',optimizer=opt, metrics=['accuracy'])
-# Measure inference time
-start_fit = time.time()
 history = model.fit(X_train, Y_train,
                               batch_size=128,
                               epochs=30,
                               verbose=True,
                               validation_data=(X_test, Y_test))    
-end_fit = time.time()
-fit_time = end_fit - start_fit
-print("fit time: {:.2f} seconds".format(fit_time))
 
 np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Binary classification history.npy',history.history)
 
@@ -198,13 +193,6 @@ y_test = Y_test.argmax(axis=1)
 
 print(pred.shape)
 print(y_test.shape)
-
-''' ROC curve'''
-# y_t = y_test.copy()
-# y_p_c = pred.copy()
-
-# np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Binary classification y_t.npy',y_t)
-# np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Binary classification y_p_c.npy',y_p_c)
 
 score = metrics.accuracy_score(y_test, pred)
 rscore = recall_score(y_test, pred, average='weighted')
