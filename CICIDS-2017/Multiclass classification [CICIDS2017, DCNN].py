@@ -115,16 +115,11 @@ model.summary()
 
 opt = tf.keras.optimizers.Adam(learning_rate=0.0001)
 model.compile(loss='categorical_crossentropy',optimizer=opt, metrics=['accuracy'])
-
-start_fit = time.time()
 history = model.fit(X_train, Y_train,
                               batch_size=128,
                               epochs=30,
                               verbose=True,
                               validation_data=(X_test, Y_test))    
-end_fit = time.time()
-fit_time = end_fit - start_fit
-print("fit time: {:.2f} seconds".format(fit_time))
 
 np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification history.npy',history.history)
 
@@ -172,12 +167,7 @@ plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS20
 plt.show()
 plt.clf()
 
-start_time = time.time()
 pred = model.predict(X_test)
-end_time = time.time()
-
-inference_time = end_time - start_time
-print("Inference time: {:.2f} seconds".format(inference_time))
 
 # Convert predictions classes to one hot vectors 
 pred = np.argmax(pred,axis=1)
@@ -186,81 +176,6 @@ y_test = Y_test.argmax(axis=1)
 
 print(pred.shape)
 print(y_test.shape)
-
-''' ROC curve'''
-# y_t = y_test.copy()
-# y_p_c = pred.copy()
-
-# np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification y_t.npy',y_t)
-# np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification y_p_c.npy',y_p_c)
-
-
-# n_classes = len(np.unique(y_t))
-# y_t = label_binarize(y_t, classes=np.arange(n_classes))
-# y_p_c = label_binarize(y_p_c, classes=np.arange(n_classes))
-
-# # Compute ROC curve and ROC area for each class
-# fpr = dict()
-# tpr = dict()
-# roc_auc = dict()
-# lw=0.8
-
-# for i in range(n_classes):
-#     fpr[i], tpr[i], _ = roc_curve(y_t[:, i], y_p_c[:, i])
-#     roc_auc[i] = auc(fpr[i], tpr[i])
-
-
-# # Compute micro-average ROC curve and ROC area
-# fpr["micro"], tpr["micro"], _ = roc_curve(y_t.ravel(), y_p_c.ravel())
-# roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-
-# # First aggregate all false positive rates
-# all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
-
-# # Then interpolate all ROC curves at this points
-# mean_tpr = np.zeros_like(all_fpr)
-# for i in range(n_classes):
-#   mean_tpr += np.interp(all_fpr, fpr[i], tpr[i])
-
-# # Finally average it and compute AUC
-# mean_tpr /= n_classes
-
-# fpr["macro"] = all_fpr
-# tpr["macro"] = mean_tpr
-# roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
-
-# # Plot all ROC curves
-# # plt.figure(figsize=(30,25))
-# plt.figure(dpi=600, figsize=(10,7))
-# lw = 0.8
-# plt.plot(fpr["micro"], tpr["micro"],
-#   label="micro-average ROC curve (area = {0:0.2f})".format(roc_auc["micro"]),
-#   color="deeppink", linestyle=":", linewidth=0.8,)
-
-# plt.plot(fpr["macro"], tpr["macro"],
-#   label="macro-average ROC curve (area = {0:0.2f})".format(roc_auc["macro"]),
-#   color="navy", linestyle=":", linewidth=0.8,)
-
-# for i in range(n_classes):
-#     plt.plot(fpr[i], tpr[i],lw=0.8,
-#              label='ROC curve of class {0} (area = {1:0.2f})'
-#              ''.format(i, roc_auc[i]))
-# plt.plot([0, 1], [0, 1], 'k--', lw=0.8)
-# plt.xlim([-0.05, 1.05])
-# plt.ylim([-0.05, 1.05])
-# plt.xlabel('FP Rate')
-# plt.ylabel('TP Rate')
-# plt.legend(loc="lower right")
-# plt.grid()
-# ax = plt.gca()
-# plt.tight_layout()
-# ax.spines['bottom'].set_visible(True)
-# ax.spines['top'].set_visible(False)
-# ax.spines['left'].set_visible(True)
-# ax.spines['right'].set_visible(False)
-# plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [CNN] Multiclass classification roc.eps', format='eps', dpi=1200)
-# plt.show()
-# plt.clf()
 
 score = metrics.accuracy_score(y_test, pred)
 rscore = recall_score(y_test, pred, average='weighted')
