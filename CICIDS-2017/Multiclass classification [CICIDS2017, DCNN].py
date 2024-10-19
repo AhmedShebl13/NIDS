@@ -15,6 +15,7 @@ from keras.models import Model
 from sklearn.model_selection import train_test_split
 from keras.layers import Input, Dense, Dropout, Flatten, Convolution1D, UpSampling1D, MaxPooling1D
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder, label_binarize
+from sklearn import metrics
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, accuracy_score, f1_score, multilabel_confusion_matrix
 
 import warnings
@@ -30,7 +31,7 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 #   print("No GPU device found")
 
 # full dataset
-path = r'/Users/ahmad/Documents/Master/Datasets/TrafficLabelling' 
+path = r'D:\GeneratedLabelledFlows\TrafficLabelling' # use your path
 all_files = glob.glob(path + "/*.csv")
 li = []
 for filename in all_files:
@@ -113,15 +114,28 @@ softmax = Dense(n_classes, activation='softmax', name='classification')(fc4)
 model = Model(inputs=input_img, outputs=softmax)
 model.summary()
 
-opt = tf.keras.optimizers.Adam(learning_rate=0.0001)
+opt = tf.keras.optimizers.legacy.Adam(learning_rate=0.0001)
 model.compile(loss='categorical_crossentropy',optimizer=opt, metrics=['accuracy'])
+
+start_fit = time.time()
 history = model.fit(X_train, Y_train,
                               batch_size=128,
                               epochs=30,
                               verbose=True,
                               validation_data=(X_test, Y_test))    
 
-np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification history.npy',history.history)
+end_fit = time.time()
+fit_time = end_fit - start_fit
+print("fit time: {:.2f} seconds".format(fit_time))  
+
+
+fitting_time_np = np.array([['Start time', 'End time', 'Fitting time'],
+                            [start_fit, end_fit, fit_time]])
+
+fitting_time_np
+
+np.save('D:/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification history.npy',history.history)
+np.save('D:/results/CICIDS-2017/History/[CICIDS2017] [CNN] Multiclass classification Fitting time.npy',fitting_time_np)
 
 # Plot for training and validation loss
 history_dict = history.history
@@ -146,7 +160,7 @@ ax.spines['top'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.ylim(0.993,1)
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [CNN] Multiclass classification accuracy.eps', format='eps', dpi=1200)
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [CNN] Multiclass classification accuracy.eps', format='eps', dpi=1200)
 plt.show()
 plt.clf()
 
@@ -163,11 +177,24 @@ ax.spines['top'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.ylim(0,0.025)
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [CNN] Multiclass classification loss.eps', format='eps', dpi=1200)
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [CNN] Multiclass classification loss.eps', format='eps', dpi=1200)
 plt.show()
 plt.clf()
 
+start_time = time.time()
 pred = model.predict(X_test)
+end_time = time.time()
+
+inference_time = end_time - start_time
+print("Inference time: {:.2f} seconds".format(inference_time))
+
+inference_time_np = np.array([['Start time', 'End time', 'Inference time'],
+                            [start_time, end_time, inference_time]])
+
+np.save('D:/results/CICIDS-2017/history/[CICIDS2017] [CNN] Multiclass classification pred.npy',pred)
+
+np.save('D:/results/CICIDS-2017/history/[CICIDS2017] [CNN] Multiclass classification Inference time.npy',inference_time_np)
+
 
 # Convert predictions classes to one hot vectors 
 pred = np.argmax(pred,axis=1)
@@ -192,10 +219,13 @@ print("F1 Measure score: {}".format(f1score))
 confMat = confusion_matrix(y_test, pred)
 print(confMat)
 cm_df = pd.DataFrame(confMat)
+cm_df
+
 labels = ['BENIGN', 'Bot', 'DDoS', 'DoS GoldenEye', 'DoS Hulk', 'DoS Slowhttptest', 
           'DoS slowloris', 'FTP-Patator', 'Heartbleed', 'Infiltration', 'PortScan',
           'SSH-Patator', 'Web Attack – Brute Force', 'Web Attack – Sql Injection',
           'Web Attack – XSS']
+
 
 plt.figure(figsize=(30,15))
 sn.set(font_scale=2.4)
@@ -204,7 +234,7 @@ sn.heatmap(cm_df, annot=True, annot_kws={"size":22}, fmt='g', xticklabels=labels
 #sn.heatmap(cm_df, annot=True, annot_kws={"size":12}, fmt='g', xticklabels=labels, yticklabels=labels)
 plt.ylabel('Actual Class')
 plt.xlabel('Predicted Class')   
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [CNN] Multiclass classification confusion matrix.eps', bbox_inches="tight", format='eps', dpi=1200) 
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [CNN] Multiclass classification confusion matrix.eps', bbox_inches="tight", format='eps', dpi=1200) 
 plt.show() 
 # plt.figure(figsize = (30,25))
 # sn.set(font_scale=2.4)
@@ -291,8 +321,8 @@ mcr = multi_classification_report(y_test, pred, labels=labels, encoded_labels=Tr
 scr = summarized_classification_report(y_test, pred, as_frame=True)
 
 # proposed model
-mcr.to_csv(r'/Users/ahmad/Documents/Master/results/csvs/CICIDS2017] [CNN] Multiclass classification report.csv')
-scr.to_csv(r'/Users/ahmad/Documents/Master/results/csvs/[CICIDS2017] [CNN] Summarized multiclass classification report.csv')
+mcr.to_csv(r'D:/results/CICIDS-2017/csvs/[CICIDS2017] [CNN] Multiclass classification report.csv')
+scr.to_csv(r'D:/results/CICIDS-2017/csvs/[CICIDS2017] [CNN] Summarized multiclass classification report.csv')
 
 
 

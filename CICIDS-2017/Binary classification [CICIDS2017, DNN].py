@@ -15,6 +15,7 @@ from keras.models import Model
 from sklearn.model_selection import train_test_split
 from keras.layers import Input, Dense, Dropout, Flatten, Convolution1D, UpSampling1D, MaxPooling1D
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder, label_binarize
+from sklearn import metrics
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, accuracy_score, f1_score, multilabel_confusion_matrix
 
 import warnings
@@ -30,7 +31,7 @@ warnings.simplefilter(action='ignore', category=DeprecationWarning)
 #   print("No GPU device found")
 
 # full dataset
-path = r'/Users/ahmad/Documents/Master/Datasets/TrafficLabelling'
+path = r'D:\GeneratedLabelledFlows\TrafficLabelling' # use your path
 all_files = glob.glob(path + "/*.csv")
 li = []
 for filename in all_files:
@@ -112,12 +113,28 @@ model.summary()
 
 opt = tf.keras.optimizers.legacy.Adam(learning_rate=0.0001)
 model.compile(loss='binary_crossentropy',optimizer=opt, metrics=['accuracy'])
+
+start_fit = time.time()
 history = model.fit(X_train, Y_train,
                               batch_size=128,
                               epochs=30,
                               verbose=True,
                               validation_data=(X_test, Y_test))    
-np.save('/Users/ahmad/Documents/Master/results/CICIDS-2017/History/[CICIDS2017] [DNN] Binary classification history.npy',history.history)
+
+end_fit = time.time()
+fit_time = end_fit - start_fit
+print("fit time: {:.2f} seconds".format(fit_time))
+
+
+fitting_time_np = np.array([['Start time', 'End time', 'Fitting time'],
+                            [start_fit, end_fit, fit_time]])
+
+fitting_time_np
+
+np.save('D:/results/CICIDS-2017/History/[CICIDS2017] [DNN] Binary classification history.npy',history.history)
+
+np.save('D:/results/CICIDS-2017/History/[CICIDS2017] [DNN] Binary classification Fitting time.npy',fitting_time_np)
+
 
 # Plot for training and validation loss
 history_dict = history.history
@@ -142,7 +159,7 @@ ax.spines['top'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.ylim(0.986,1)
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [DNN] Binary classification accuracy.eps', format='eps', dpi=1200)
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [DNN] Binary classification accuracy.eps', format='eps', dpi=1200)
 plt.show()
 plt.clf()
 
@@ -159,11 +176,24 @@ ax.spines['top'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.ylim(0,0.04)
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [DNN] Binary classification loss.eps', format='eps', dpi=1200)
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [DNN] Binary classification loss.eps', format='eps', dpi=1200)
 plt.show()
 plt.clf()
 
+start_time = time.time()
 pred = model.predict(X_test)
+end_time = time.time()
+
+inference_time = end_time - start_time
+print("Inference time: {:.2f} seconds".format(inference_time))
+
+
+inference_time_np = np.array([['Start time', 'End time', 'Inference time'],
+                            [start_time, end_time, inference_time]])
+
+np.save('D:/results/CICIDS-2017/history/[CICIDS2017] [DNN] Binary classification pred.npy',pred)
+
+np.save('D:/results/CICIDS-2017/history/[CICIDS2017] [DNN] Binary classification Inference time.npy',inference_time_np)
 
 # Convert predictions classes to one hot vectors 
 pred = np.argmax(pred,axis=1)
@@ -193,6 +223,7 @@ print(confMat)
 cm_df = pd.DataFrame(confMat)
 labels = ['BENIGN','Attack']
 
+
 plt.figure(figsize=(20,10))
 sn.set(font_scale=2.4)
 sn.heatmap(cm_df, annot=True, annot_kws={"size":28}, fmt='g', xticklabels=labels, yticklabels=labels, cmap='Blues')
@@ -200,7 +231,7 @@ sn.heatmap(cm_df, annot=True, annot_kws={"size":28}, fmt='g', xticklabels=labels
 #sn.heatmap(cm_df, annot=True, annot_kws={"size":12}, fmt='g', xticklabels=labels, yticklabels=labels)
 plt.ylabel('Actual Class')
 plt.xlabel('Predicted Class')   
-plt.savefig('/Users/ahmad/Documents/Master/results/CICIDS-2017/figuers/[CICIDS2017] [DNN] Binary classification confusion matrix.eps',  bbox_inches="tight", format='eps', dpi=1200) 
+plt.savefig('D:/results/CICIDS-2017/figures/[CICIDS2017] [DNN] Binary classification confusion matrix.eps',  bbox_inches="tight", format='eps', dpi=1200) 
 plt.show() 
 # plt.figure(figsize = (30,25))
 # sn.set(font_scale=2.4)
@@ -287,8 +318,8 @@ mcr = multi_classification_report(y_test, pred, labels=labels, encoded_labels=Tr
 scr = summarized_classification_report(y_test, pred, as_frame=True)
 
 # proposed model
-mcr.to_csv(r'/Users/ahmad/Documents/Master/results/CICIDS-2017/csvs/[CICIDS2017] [DNN] Binary classification report.csv')
-scr.to_csv(r'/Users/ahmad/Documents/Master/results/CICIDS-2017/csvs/[CICIDS2017] [DNN] Summarized binary classification report.csv')
+mcr.to_csv(r'D:/results/CICIDS-2017/csvs/[CICIDS2017] [DNN] Binary classification report.csv')
+scr.to_csv(r'D:/results/CICIDS-2017/csvs/[CICIDS2017] [DNN] Summarized binary classification report.csv')
 
 
 
